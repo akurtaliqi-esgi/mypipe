@@ -1,6 +1,8 @@
 extern crate clap;
+
 use clap::{Arg, App};
 use std::process::Command;
+use std::io::{self, Write};
 
 fn main() {
     let matches = App::new("mypipe")
@@ -10,33 +12,32 @@ fn main() {
                           .arg(
                                 Arg::with_name("input")
                                 .takes_value(true)
-                                .long("--in")
-                                .requires("out")
+                                .long("in")
+                                .required(true)
                                 )
                            .arg(
                                 Arg::with_name("output")
                                 .takes_value(true)
-                                .long("--out")
-                                .requires("output")
+                                .long("out")
+                                .required(true)
                                 )                           
                           .get_matches();
 
-    let cmd_fortune = matches.value_of("input").unwrap();
-    let output = matches.value_of("output").unwrap();
+    let input_command_string = matches.value_of("input").unwrap();
+    let output_command_string = matches.value_of("output").unwrap();
 
-    let cmd_fortune = 
-                Command::new(cmd_fortune)
-                    .output()
-                    .expect("you failed");
+    let input_command_result = Command::new(String::from(input_command_string))
+                        .output()
+                        .expect("you failed");
+                        
+    io::stdout().write_all(&(input_command_result).stdout).unwrap();
 
-    let msg = String::from_utf8_lossy(&cmd_fortune.stdout).to_string();
+    println!();
+    
+    let output_command_reqult = Command::new(output_command_string)
+                        .output()
+                        .expect("you failed");
 
-    let cmd_cowsay =   
-                Command::new(output)
-                    .arg(msg)
-                    .output()
-                    .expect("you failed");
 
-    println!("{}", String::from_utf8_lossy(&cmd_cowsay.stdout).to_string());
-
+    io::stdout().write_all(&(output_command_reqult).stdout).unwrap();
 }
